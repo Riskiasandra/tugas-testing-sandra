@@ -1,0 +1,28 @@
+name: PHP CI - Formlogin
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Run smoke tests (start server + run tests)
+        run: |
+          php -S 127.0.0.1:8080 -t public/ > server.log 2>&1 &
+          sleep 2
+          tail -n +1 server.log || true
+          bash tests/smoke.sh
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat server.log || true
